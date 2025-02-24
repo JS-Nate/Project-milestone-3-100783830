@@ -1,0 +1,28 @@
+# Use the official Python image
+FROM python:3.12
+
+# Set working directory inside the container
+WORKDIR /app
+
+# Copy local files into the container
+COPY . /app
+
+# Install dependencies
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Set environment variable for Google Cloud authentication
+ENV GOOGLE_APPLICATION_CREDENTIALS="/app/gcp-key.json"
+
+# Entry point to run the pipeline
+CMD ["sh", "-c", "python detect.py \
+  --runner DataflowRunner \
+  --setup_file ./setup.py \
+  --input projects/$PROJECT/topics/design_images \
+  --output projects/$PROJECT/topics/design_predictions \
+  --model gs://project1-448716-bucket/models/haarcascade_fullbody.xml \
+  --project $PROJECT \
+  --region northamerica-northeast2 \
+  --staging_location gs://project1-448716-bucket/staging \
+  --temp_location gs://project1-448716-bucket/temp \
+  --experiment use_unsupported_python_version \
+  --streaming"]
